@@ -1,0 +1,122 @@
+create database stud_performance;
+use stud_performance;
+
+CREATE TABLE student_performance (
+    hours_studied FLOAT,
+    attendance INT,
+    parental_involvement VARCHAR(50),
+    access_to_resources VARCHAR(50),
+    extracurricular_activities VARCHAR(10),
+    sleep_hours FLOAT,
+    previous_scores FLOAT,
+    motivation_level VARCHAR(50),
+    internet_access VARCHAR(10),
+    tutoring_sessions INT,
+    family_income VARCHAR(50),
+    teacher_quality VARCHAR(50),
+    school_type VARCHAR(50),
+    peer_influence VARCHAR(50),
+    physical_activity FLOAT,
+    learning_disabilities VARCHAR(10),
+    parental_education_level VARCHAR(50),
+    distance_from_home VARCHAR(50),
+    gender VARCHAR(10),
+    exam_score FLOAT
+);
+
+
+select*from student_performance;
+
+#Q1: Overall Performance
+
+SELECT AVG(exam_score) AS Avg, MIN(exam_score) AS Min, MAX(exam_score) AS Max FROM student_performance;
+
+
+#Q2: Based on Attendance?
+
+SELECT CASE 
+        WHEN attendance <= 60 THEN 'Below 60'
+        WHEN attendance BETWEEN 60 AND 80 THEN '60-80'
+        ELSE 'Above 80'
+    END AS attendance_group,
+    AVG(exam_score) AS avg_score FROM student_performance
+GROUP BY attendance_group;
+
+#Q3: Study Hour effect?
+
+SELECT CASE 
+        WHEN hours_studied <= 10 THEN 'Below 10'
+        WHEN hours_studied BETWEEN 10 AND 20 THEN '10-20'
+        ELSE 'Above 20'
+    END AS Hours_studied_data,
+    AVG(exam_score) AS avg_score FROM student_performance
+GROUP BY hours_studied_data;
+
+#Q4: Top vs Bottom
+
+SELECT 
+    CASE 
+        WHEN exam_score >= 75 THEN 'Top Students'
+        WHEN exam_score <= 60 THEN 'Bottom Students'
+    END AS student_group,
+    AVG(hours_studied) AS avg_hours,
+    AVG(attendance) AS avg_attendance,
+    AVG(sleep_hours) AS avg_sleep FROM student_performance
+WHERE exam_score >= 75 OR exam_score <= 60
+GROUP BY student_group;
+
+
+
+#Q5: Does parental education level affect performance?
+
+
+SELECT parental_education_level,
+COUNT(*) AS count_students FROM (
+    SELECT parental_education_level
+    FROM student_performance
+    ORDER BY exam_score DESC
+    LIMIT 50
+) AS top_students
+GROUP BY parental_education_level
+ORDER BY count_students DESC;
+
+
+#Q6: Is there an optimal sleep range for best scores?
+
+SELECT CASE WHEN sleep_hours < 5 THEN 'Less than 5'
+WHEN sleep_hours BETWEEN 5 AND 8 THEN '5-8'
+ELSE 'More than 8' END AS SLEEP_RANGE, 
+AVG(exam_score) AS avg_score FROM student_performance
+GROUP BY SLEEP_RANGE
+ORDER BY avg_score DESC;
+
+
+#Q7: Among high scorers (say score > 80), what patterns do you see?
+
+SELECT AVG(hours_studied) AS avg_hours_studied, 
+AVG(attendance) AS avg_attendance, 
+AVG(sleep_hours) AS avg_sleep
+FROM student_performance
+WHERE exam_score > 80;
+
+
+#Q8:  Risk group identification (Lower than average student groups)
+
+#A: Look into Average, Min and Max: 
+
+SELECT MIN(attendance), MAX(attendance), AVG(attendance), MIN(hours_studied), MAX(hours_studied), AVG(hours_studied), MIN(exam_score), MAX(exam_score), AVG(exam_score)
+FROM student_performance;
+
+
+#B: Take AVG as benchmark and classify: 
+
+SELECT COUNT(*) AS at_risk_students FROM student_performance
+WHERE attendance < 79
+AND hours_studied < 19
+AND exam_score < 67;
+
+
+#C: Take total number and compare:
+
+SELECT COUNT(*) AS total_students FROM student_performance;
+
